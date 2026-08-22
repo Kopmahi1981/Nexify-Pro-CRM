@@ -1,0 +1,22 @@
+# Environment & Secrets
+.env
+*.env
+credentials.json
+token.json
+
+# Databases & Logs
+*.db
+*.sqlite3
+*.log
+leads.db
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Node / Frontend
+node_modules/
+dist/
+.DS_Store
