@@ -31,3 +31,8 @@ GMAIL_SMTP_APP_PASSWORD = os.getenv("GMAIL_SMTP_APP_PASSWORD", "")
 WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN", "")
 
 DB_PATH = os.getenv("DB_PATH", "leads.db")
+
+SENDER_NAME = "Nexify Pro Team"
+SENDER_EMAIL = "support@nexifypro.in"
+SENDER_PHONE = "9032917731"
+SENDER_ADDRESS = "Plot no 295 TNGO'S Colony, Kattedan, Rajendera Nagar (M)"
