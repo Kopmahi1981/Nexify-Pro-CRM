@@ -5,11 +5,12 @@ import { calculateLeadScore } from '../services/leadScoring';
 import { supabaseService } from '../services/supabaseService';
 import VoiceRecorder from './VoiceRecorder';
 
-// Parser mapping date inputs dynamically
+// Robust date parser handling natural speech, words, and various numerical formats
 const parseToYYYYMMDD = (dateStr) => {
-  const clean = dateStr.trim().toLowerCase();
+  if (!dateStr) return null;
+  const clean = dateStr.trim().toLowerCase().replace(/[.,]/g, '');
   const today = new Date();
-  
+
   if (clean === 'today') {
     return today.toISOString().split('T')[0];
   }
@@ -18,66 +19,84 @@ const parseToYYYYMMDD = (dateStr) => {
     tomorrow.setDate(today.getDate() + 1);
     return tomorrow.toISOString().split('T')[0];
   }
-  
+
+  // Weekdays handling (e.g., "friday", "next monday")
   const weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  let weekdayTarget = -1;
-  let isNext = false;
-  
-  if (clean.startsWith('next ')) {
-    isNext = true;
-    const dayWord = clean.substring(5).trim();
-    weekdayTarget = weekdays.indexOf(dayWord);
-  } else {
-    weekdayTarget = weekdays.indexOf(clean);
-  }
-  
-  if (weekdayTarget !== -1) {
-    const currentDay = today.getDay();
-    let daysToAdd = weekdayTarget - currentDay;
-    if (daysToAdd <= 0) {
-      daysToAdd += 7;
+  for (let i = 0; i < weekdays.length; i++) {
+    if (clean.includes(weekdays[i])) {
+      const isNext = clean.includes('next');
+      const currentDay = today.getDay();
+      let daysToAdd = i - currentDay;
+      if (daysToAdd <= 0) daysToAdd += 7;
+      if (isNext && daysToAdd < 7) daysToAdd += 7;
+
+      const targetDate = new Date(today);
+      targetDate.setDate(today.getDate() + daysToAdd);
+      return targetDate.toISOString().split('T')[0];
     }
-    if (isNext && daysToAdd < 7) {
-      daysToAdd += 7;
-    }
-    const targetDate = new Date(today);
-    targetDate.setDate(today.getDate() + daysToAdd);
-    return targetDate.toISOString().split('T')[0];
   }
 
+  // Standard YYYY-MM-DD or YYYY/MM/DD
   const ymdMatch = clean.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
   if (ymdMatch) {
     const y = parseInt(ymdMatch[1], 10);
     const m = parseInt(ymdMatch[2], 10) - 1;
     const d = parseInt(ymdMatch[3], 10);
-    const dateObj = new Date(y, m, d);
-    if (!isNaN(dateObj.getTime())) {
+    const dt = new Date(y, m, d);
+    if (!isNaN(dt.getTime())) {
       return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     }
+  }
+
+  // DD-MM-YYYY or DD/MM/YYYY (Standard Indian / international format)
+  const dmyMatch = clean.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (dmyMatch) {
+    const d = parseInt(dmyMatch[1], 10);
+    const m = parseInt(dmyMatch[2], 10) - 1;
+    const y = parseInt(dmyMatch[3], 10);
+    const dt = new Date(y, m, d);
+    if (!isNaN(dt.getTime())) {
+      return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    }
+  }
+
+  // Spoken/textual dates: "15th Sept", "15 September 2026", "Sep 15"
+  const cleanedTextDate = clean.replace(/(\d+)(st|nd|rd|th)/g, '$1');
+  const parsedTimestamp = Date.parse(cleanedTextDate);
+  if (!isNaN(parsedTimestamp)) {
+    const parsedObj = new Date(parsedTimestamp);
+    if (parsedObj.getFullYear() < today.getFullYear()) {
+      parsedObj.setFullYear(today.getFullYear());
+    }
+    return parsedObj.toISOString().split('T')[0];
   }
 
   return null;
 };
 
-// Time parser
+// Robust time parser handling 12hr, 24hr, spoken periods, and punctuation
 const parseTo24HourTime = (timeStr) => {
-  const clean = timeStr.trim().toUpperCase();
-  const regex = /^(\d{1,2})(?:[:.](\d{2}))?\s*(AM|PM)?$/;
-  const match = clean.match(regex);
+  if (!timeStr) return null;
+  const clean = timeStr.trim().toLowerCase().replace(/[.,]/g, '');
+
+  const match = clean.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm|in the morning|in the afternoon|in the evening|o'clock)?/);
   if (!match) return null;
-  
+
   let hours = parseInt(match[1], 10);
   let minutes = match[2] ? parseInt(match[2], 10) : 0;
-  const ampm = match[3];
-  
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
-  
-  if (ampm) {
-    if (hours > 12) return null;
-    if (ampm === 'PM' && hours < 12) hours += 12;
-    if (ampm === 'AM' && hours === 12) hours = 0;
+  const period = match[3] || '';
+
+  const isPM = period.includes('pm') || period.includes('afternoon') || period.includes('evening');
+  const isAM = period.includes('am') || period.includes('morning');
+
+  if (hours > 24 || minutes > 59) return null;
+
+  if (isPM && hours < 12) {
+    hours += 12;
+  } else if (isAM && hours === 12) {
+    hours = 0;
   }
-  
+
   const hh = String(hours).padStart(2, '0');
   const mm = String(minutes).padStart(2, '0');
   return `${hh}:${mm}:00`;

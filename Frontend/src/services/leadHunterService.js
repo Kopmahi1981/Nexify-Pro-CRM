@@ -14,11 +14,11 @@ export const leadHunterService = {
     return res.json();
   },
 
-  async discoverLeads(category, city) {
+  async discoverLeads(category, city, area = "") {
     const res = await fetch(`${API_BASE}/discover`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ category, city }),
+      body: JSON.stringify({ category, city, area }),
     });
     if (!res.ok) throw new Error("Lead discovery failed");
     return res.json();

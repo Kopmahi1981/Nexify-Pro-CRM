@@ -30,6 +30,7 @@ database.init_db()
 class DiscoveryRequest(BaseModel):
     category: str
     city: str
+    area: Optional[str] = ""
 
 class DispatchRequest(BaseModel):
     lead_id: int
@@ -53,9 +54,13 @@ def get_leads(status: Optional[str] = None):
 
 @app.post("/api/discover")
 def run_discovery(req: DiscoveryRequest):
-    raw_leads = scraping.scrape_leads(req.category, req.city)
+    # Combine area and city if area is provided
+    target_location = f"{req.area.strip()}, {req.city.strip()}" if req.area and req.area.strip() else req.city.strip()
+    
+    raw_leads = scraping.scrape_leads(req.category, target_location)
     processed_count = 0
     saved_leads = []
+    # ... keep the rest of your loop and logic below unchanged ...
     
     for item in raw_leads:
         lead = item if isinstance(item, Lead) else Lead(**item)

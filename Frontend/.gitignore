@@ -24,3 +24,21 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+ENV/
+.venv/
+
+# Local Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment files
+.env*
+!.env.example

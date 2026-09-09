@@ -9,6 +9,7 @@ def calculate_lead_score(lead_data: Union[Lead, Dict[str, Any]]) -> Tuple[float,
     - +15 for email, reviews_count >= 10 (each)
     - +10 for rating present
     - Opportunity triggers: +40 if no website, +35 if broken website, +30 if social media only
+    - Score is capped at 100.0
     - Tiers: score >= 70 is 'HOT', 45-69 is 'WARM', <45 is 'LOW'.
     
     Updates the score and tier attributes if lead_data is a Lead instance or dictionary.
@@ -59,6 +60,9 @@ def calculate_lead_score(lead_data: Union[Lead, Dict[str, Any]]) -> Tuple[float,
 
     if data.get("is_social_only"):
         score += 30.0
+
+    # Cap score strictly between 0.0 and 100.0
+    score = min(100.0, max(0.0, score))
 
     # Tier Classification
     if score >= 70.0:

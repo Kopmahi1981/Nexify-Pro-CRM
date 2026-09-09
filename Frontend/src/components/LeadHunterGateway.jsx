@@ -8,6 +8,7 @@ export default function LeadHunterGateway({ onLeadApproved }) {
   const [followUpStats, setFollowUpStats] = useState({});
   const [category, setCategory] = useState("Dentists");
   const [city, setCity] = useState("Hyderabad");
+  const [area, setArea] = useState("");
   const [loading, setLoading] = useState(false);
   const [batchLoading, setBatchLoading] = useState(false);
   const [followUpLoading, setFollowUpLoading] = useState(false);
@@ -39,7 +40,7 @@ export default function LeadHunterGateway({ onLeadApproved }) {
     e.preventDefault();
     setLoading(true);
     try {
-      await leadHunterService.discoverLeads(category, city);
+      await leadHunterService.discoverLeads(category, city, area);
       await loadData();
     } catch (err) {
       alert("Discovery failed: " + err.message);
@@ -176,20 +177,29 @@ export default function LeadHunterGateway({ onLeadApproved }) {
           SCRAPE GOOGLE MAPS LEADS
         </h4>
         <form onSubmit={handleDiscover} style={{ display: "flex", gap: "12px" }}>
+      
           <input
             type="text"
+            placeholder="Niche (e.g. Dentists)"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            placeholder="Category (e.g. Dentists)"
-            style={{ flex: 1, background: "#1f2937", border: "1px solid #374151", color: "#fff", padding: "10px 14px", borderRadius: "8px" }}
+            className="bg-[#1e293b] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 flex-1"
           />
           <input
             type="text"
+            placeholder="City (e.g. Hyderabad)"
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            placeholder="City (e.g. Hyderabad)"
-            style={{ flex: 1, background: "#1f2937", border: "1px solid #374151", color: "#fff", padding: "10px 14px", borderRadius: "8px" }}
+            className="bg-[#1e293b] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 flex-1"
           />
+          <input
+            type="text"
+            placeholder="Area / Pincode (e.g. Gachibowli / 500032)"
+            value={area}
+            onChange={(e) => setArea(e.target.value)}
+            className="bg-[#1e293b] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 flex-1"
+          />
+
           <button
             type="submit"
             disabled={loading}
