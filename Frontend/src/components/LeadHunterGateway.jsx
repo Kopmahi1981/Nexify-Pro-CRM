@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { leadHunterService } from "../services/leadHunterService";
+import { supabaseService } from '../services/supabaseService';
 
 export default function LeadHunterGateway({ onLeadApproved }) {
   const [metrics, setMetrics] = useState({ total: 0, hot: 0, pending: 0, dispatched: 0 });
@@ -81,10 +82,29 @@ export default function LeadHunterGateway({ onLeadApproved }) {
     setBatchLoading(true);
     try {
       const res = await leadHunterService.batchDispatchLeads(selectedIds, dryRun);
+
+      const leadsToSync = leads.filter((l) => selectedIds.includes(l.id));
+      await Promise.all(
+        leadsToSync.map((item) =>
+          supabaseService.createLead({
+            name: item.name,
+            phone: item.phone || null,
+            email: item.email || null,
+            business_name: item.name,
+            industry: item.category || item.industry || "General",
+            lead_status: dryRun ? "Simulated Sent" : "Contacted",
+            lead_score: item.score || 70,
+            lead_source: "lead_hunter"
+          })
+        )
+      );
+
       alert(`Batch completed: Dispatched ${res.dispatched_count} leads.`);
+      setSelectedIds([]);
       await loadData();
       if (onLeadApproved) onLeadApproved();
     } catch (err) {
+      console.error("Batch dispatch error:", err);
       alert("Batch dispatch error: " + err.message);
     } finally {
       setBatchLoading(false);
@@ -111,11 +131,24 @@ export default function LeadHunterGateway({ onLeadApproved }) {
         pitchData.pitch.email_body,
         dryRun
       );
+
+      await supabaseService.createLead({
+        name: selectedLead.name,
+        phone: selectedLead.phone || null,
+        email: selectedLead.email || null,
+        business_name: selectedLead.name,
+        industry: selectedLead.category || selectedLead.industry || "General",
+        lead_status: dryRun ? "Simulated Sent" : "Contacted",
+        lead_score: selectedLead.score || 70,
+        lead_source: "lead_hunter"
+      });
+
       setSelectedLead(null);
       setPitchData(null);
       await loadData();
       if (onLeadApproved) onLeadApproved();
     } catch (err) {
+      console.error("Dispatch error:", err);
       alert("Dispatch error: " + err.message);
     }
   };
@@ -281,7 +314,7 @@ export default function LeadHunterGateway({ onLeadApproved }) {
                     </span>
                   </div>
                   <div style={{ fontSize: "13px", color: "#9ca3af", margin: "8px 0" }}>
-                    📞 {lead.phone || "N/A"} &nbsp;|&nbsp; 🌐 {lead.website || "No Website"}
+                    📞 {lead.phone || "N/A"} &nbsp;|&nbsp; 🌐 {lead.website || "No Website"} &nbsp;|&nbsp; <span style={{ color: lead.email ? "#10b981" : "#6b7280" }}>✉️ {lead.email || "No Email"}</span>
                   </div>
                   <div style={{ display: "flex", gap: "8px" }}>
                     <button
@@ -309,7 +342,18 @@ export default function LeadHunterGateway({ onLeadApproved }) {
             <h3 style={{ margin: 0, fontSize: "18px", color: "#f8fafc" }}>
               Review Outreach: {selectedLead.name}
             </h3>
-
+          <div>
+            <label style={{ fontSize: "12px", fontWeight: "600", color: "#94a3b8", display: "block", marginBottom: "6px" }}>
+              TARGET EMAIL
+            </label>
+            <input
+              type="email"
+              value={selectedLead.email || ""}
+              onChange={(e) => setSelectedLead({ ...selectedLead, email: e.target.value })}
+              placeholder="No email detected (will fallback to demo@example.com)"
+              style={{ width: "100%", background: "#1f2937", border: "1px solid #374151", color: selectedLead.email ? "#10b981" : "#9ca3af", padding: "10px 12px", borderRadius: "8px", outline: "none" }}
+            />
+          </div>
             <div>
               <label style={{ fontSize: "12px", fontWeight: "600", color: "#94a3b8", display: "block", marginBottom: "6px" }}>
                 SUBJECT LINE

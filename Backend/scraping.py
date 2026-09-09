@@ -1,9 +1,70 @@
 import re
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+from urllib.parse import urljoin, urlparse
+
+import requests
 from serpapi import GoogleSearch
+import urllib3
+
 from config import SERP_API_KEY
 from logger import logger
 from models import Lead
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+def extract_email_from_website(website_url: str, timeout: int = 5) -> Optional[str]:
+    """Fetches the homepage and /contact page to extract an email address via regex."""
+    if not website_url or not isinstance(website_url, str):
+        return None
+
+    if not website_url.startswith(("http://", "https://")):
+        website_url = "https://" + website_url
+
+    # Stricter pattern: TLD must be letters only (2-12 chars), no digits
+    email_pattern = re.compile(
+        r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,12}\b"
+    )
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
+    }
+
+    # Common CDN/asset artifacts to reject
+    ignored_keywords = [
+        "bootstrap", "fontawesome", "jquery", "jsdelivr", "unpkg", 
+        "wixpress", "sentry", "example.com", "schema.org", "@1.", "@2.", "@3."
+    ]
+
+    urls_to_try = [website_url]
+    parsed = urlparse(website_url)
+    base_domain = f"{parsed.scheme}://{parsed.netloc}"
+    urls_to_try.append(urljoin(base_domain, "/contact"))
+    urls_to_try.append(urljoin(base_domain, "/contact-us"))
+
+    for url in urls_to_try:
+        try:
+            resp = requests.get(url, headers=headers, timeout=timeout, verify=False)
+            if resp.status_code == 200:
+                matches = email_pattern.findall(resp.text)
+                for candidate in matches:
+                    candidate_lower = candidate.lower()
+
+                    # Filter out file extensions mistakenly captured
+                    ext = candidate_lower.split(".")[-1]
+                    if ext in ["png", "jpg", "jpeg", "webp", "gif", "svg", "css", "js", "woff", "ttf"]:
+                        continue
+
+                    # Filter out CDN / framework version tags
+                    if any(kw in candidate_lower for kw in ignored_keywords):
+                        continue
+
+                    return candidate
+        except Exception:
+            continue
+
+    return None
 
 def clean_phone_number(phone_raw: Optional[str]) -> Optional[str]:
     """Clean phone number string to keep digits only."""
@@ -74,7 +135,7 @@ def fetch_google_maps_leads(category: str, city: str, api_key: str = SERP_API_KE
                 phone=phone,
                 website=website,
                 address=address,
-                email=None,
+                email=extract_email_from_website(website),
                 rating=rating,
                 reviews_count=reviews_count,
                 status="NEW"
