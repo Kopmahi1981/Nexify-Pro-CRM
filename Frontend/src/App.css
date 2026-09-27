@@ -182,3 +182,154 @@
     border-right-color: var(--border);
   }
 }
+
+/* Responsive mobile layout reset */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  /* Reset any hardcoded sidebar margins or offsets */
+  .main-content,
+  .dashboard-container,
+  .app-container,
+  main {
+    margin-left: 0 !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Ensure tables and grids scroll internally instead of breaking the page */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .kpi-grid,
+  .leads-table-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* =========================================================
+   Mobile Viewport & CRM Layout Responsive Overrides
+   ========================================================= */
+
+html, body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Ensure container sizing remains bounded */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  /* Collapse the multi-column sidebar layout into single column */
+  .crm-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+  }
+
+  /* Make sidebar off-canvas drawer on mobile */
+  .crm-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    z-index: 1000 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s ease-in-out !important;
+    width: 260px !important;
+  }
+
+  .crm-sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  /* Reset main content container */
+  .crm-main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    min-width: 0 !important;
+    padding: 0 12px 24px 12px !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Top navigation bar adjustments */
+  .crm-top-bar {
+    width: 100% !important;
+    padding: 12px 4px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+  }
+
+  .top-bar-title {
+    font-size: 1.1rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 200px !important;
+  }
+
+  .crm-page-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Force all nested cards, tables, and search panels to stay within bounds */
+  .kpi-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  .kpi-card {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .leads-table-container,
+  .table-responsive,
+  table {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
