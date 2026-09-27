@@ -205,43 +205,56 @@ export default function LeadHunterGateway({ onLeadApproved }) {
       </div>
 
       {/* Discovery Form */}
-      <div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: "12px", padding: "20px", marginBottom: "24px" }}>
-        <h4 style={{ margin: "0 0 14px 0", fontSize: "13px", color: "#9ca3af", fontWeight: "600" }}>
-          SCRAPE GOOGLE MAPS LEADS
-        </h4>
-        <form onSubmit={handleDiscover} style={{ display: "flex", gap: "12px" }}>
-      
-          <input
-            type="text"
-            placeholder="Niche (e.g. Dentists)"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="bg-[#1e293b] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 flex-1"
-          />
-          <input
-            type="text"
-            placeholder="City (e.g. Hyderabad)"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="bg-[#1e293b] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 flex-1"
-          />
-          <input
-            type="text"
-            placeholder="Area / Pincode (e.g. Gachibowli / 500032)"
-            value={area}
-            onChange={(e) => setArea(e.target.value)}
-            className="bg-[#1e293b] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 flex-1"
-          />
+<div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: "12px", padding: "16px", marginBottom: "24px", maxWidth: "100%", boxSizing: "border-box" }}>
+  <h4 style={{ margin: "0 0 14px 0", fontSize: "13px", color: "#9ca3af", fontWeight: "600" }}>
+    SCRAPE GOOGLE MAPS LEADS
+  </h4>
+  <form onSubmit={handleDiscover} style={{ display: "flex", flexWrap: "wrap", gap: "12px", width: "100%" }}>
+    <input
+      type="text"
+      placeholder="Niche (e.g. Dentists)"
+      value={category}
+      onChange={(e) => setCategory(e.target.value)}
+      className="bg-[#1e293b] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+      style={{ flex: "1 1 200px", minWidth: 0, width: "100%", boxSizing: "border-box" }}
+    />
+    <input
+      type="text"
+      placeholder="City (e.g. Hyderabad)"
+      value={city}
+      onChange={(e) => setCity(e.target.value)}
+      className="bg-[#1e293b] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+      style={{ flex: "1 1 200px", minWidth: 0, width: "100%", boxSizing: "border-box" }}
+    />
+    <input
+      type="text"
+      placeholder="Area / Pincode (e.g. Gachibowli / 500032)"
+      value={area}
+      onChange={(e) => setArea(e.target.value)}
+      className="bg-[#1e293b] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+      style={{ flex: "1 1 200px", minWidth: 0, width: "100%", boxSizing: "border-box" }}
+    />
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{ background: "#3b82f6", color: "#fff", border: "none", padding: "10px 24px", borderRadius: "8px", fontWeight: "600", cursor: "pointer" }}
-          >
-            {loading ? "Discovering..." : "Discover & Score"}
-          </button>
-        </form>
-      </div>
+    <button
+      type="submit"
+      disabled={loading}
+      style={{
+        background: "#3b82f6",
+        color: "#fff",
+        border: "none",
+        padding: "10px 24px",
+        borderRadius: "8px",
+        fontWeight: "600",
+        cursor: "pointer",
+        flex: "1 1 100%",
+        minWidth: 0,
+        boxSizing: "border-box"
+      }}
+    >
+      {loading ? "Discovering..." : "Discover & Score"}
+    </button>
+  </form>
+</div>
 
       {/* Main Review Section */}
       <div style={{ display: "grid", gridTemplateColumns: selectedLead ? "1fr 1fr" : "1fr", gap: "24px", alignItems: "start" }}>
